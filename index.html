@@ -1,559 +1,844 @@
 <!DOCTYPE html>
 <html lang="zh-CN">
 <head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
-  <title>健身训练记录</title>
-  <style>
-    * {box-sizing: border-box;margin:0;padding:0;font-family: -apple-system,BlinkMacSystemFont,Segoe UI,Roboto,sans-serif;}
-    body {background:#f4f5f7;font-size:16px;color:#222;padding-bottom:20px;}
-    /* 顶部黑色标题栏 */
-    .header-bar{
-      background:#222;
-      color:#fff;
-      text-align:center;
-      padding:18px 0;
-      font-size:22px;
-      font-weight:bold;
-    }
-    /* 顶部标签 */
-    .tab-top-wrap{
-      display:flex;
-      background:#fff;
-    }
-    .tab-top{
-      flex:1;
-      text-align:center;
-      padding:14px 0;
-      font-size:19px;
-      color:#777;
-      border-bottom:3px solid transparent;
-      cursor:pointer;
-    }
-    .tab-top.active{
-      color:#007aff;
-      border-bottom-color:#007aff;
-    }
-    .container{
-      padding:16px;
-    }
-    .card{
-      background:#fff;
-      border-radius:14px;
-      padding:18px;
-      margin-bottom:18px;
-    }
-    .card-title{
-      font-size:17px;
-      color:#555;
-      margin-bottom:10px;
-    }
-    .input-line{
-      display:flex;
-      align-items:center;
-      margin-bottom:14px;
-    }
-    .input-line label{
-      width:110px;
-      font-size:17px;
-      color:#444;
-    }
-    .input-line input{
-      flex:1;
-      border:none;
-      border-bottom:1px solid #ddd;
-      font-size:17px;
-      padding:6px 4px;
-      outline:none;
-    }
-    /* 部位按钮组 */
-    .part-btn-wrap{
-      display:flex;
-      gap:12px;
-      margin:12px 0 20px;
-    }
-    .part-btn{
-      padding:12px 22px;
-      border-radius:999px;
-      border:none;
-      font-size:17px;
-      background:#e8e9ed;
-      cursor:pointer;
-    }
-    .part-btn.active{
-      background:#007aff;
-      color:#fff;
-    }
-    .action-card-header{
-      display:flex;
-      justify-content:space-between;
-      align-items:center;
-      margin-bottom:10px;
-    }
-    .select-all{
-      color:#007aff;
-      font-size:16px;
-      cursor:pointer;
-    }
-    .action-item{
-      display:flex;
-      align-items:center;
-      margin:16px 0;
-      font-size:18px;
-      gap:10px;
-    }
-    .action-item input[type=checkbox]{
-      width:24px;height:24px;
-    }
-    /* 表格取消横向滚动，自适应铺满 */
-    .table-wrap {
-      width:100%;
-    }
-    table {
-      width:100%;
-      border-collapse:collapse;
-      table-layout: fixed;
-    }
-    /* 设置每列固定宽度 */
-    table th:nth-child(1){width:16%;}
-    table th:nth-child(2){width:28%;}
-    table th:nth-child(3){width:18%;}
-    table th:nth-child(4){width:18%;}
-    table th:nth-child(5){width:20%;}
-    th,td {
-      border:none;
-      text-align:center;
-      padding:12px 4px;
-      font-size:17px;
-    }
-    th{
-      color:#777;
-      font-weight:normal;
-    }
-    td input{
-      width:90%;
-      border:none;
-      text-align:center;
-      font-size:17px;
-      outline:none;
-    }
-    /* 汇总框底色改为白色 */
-    .summary-box{
-      width:100%;
-      min-height:80px;
-      border:none;
-      background:#ffffff;
-      border-radius:12px;
-      padding:14px;
-      font-size:17px;
-      white-space:pre-wrap;
-    }
-    /* 底部按钮 */
-    .bottom-btn-wrap{
-      display:flex;
-      gap:14px;
-      margin-top:20px;
-    }
-    .bottom-btn{
-      flex:1;
-      padding:16px;
-      border-radius:14px;
-      border:none;
-      font-size:19px;
-      cursor:pointer;
-    }
-    .bottom-btn.blue{
-      background:#007aff;
-      color:#fff;
-    }
-    .bottom-btn.grey{
-      background:#e8e9ed;
-      color:#777;
-    }
-    .hidden{display:none;}
-  </style>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<link rel="icon" type="image/svg+xml" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'%3E%3Crect width='64' height='64' rx='14' fill='%23007aff'/%3E%3Ctext x='32' y='44' font-size='32' text-anchor='middle' fill='white' font-weight='bold'%3EF%3C/text%3E%3C/svg%3E">
+<title>健身训练记录工具</title>
+<style>
+* { margin: 0; padding: 0; box-sizing: border-box; }
+body {
+  font-family: -apple-system, BlinkMacSystemFont, "PingFang SC", "Microsoft YaHei", sans-serif;
+  background: #f5f5f7;
+  color: #1d1d1f;
+  padding-bottom: 80px;
+  -webkit-tap-highlight-color: transparent;
+}
+.header {
+  background: #1d1d1f;
+  color: #fff;
+  padding: 16px;
+  text-align: center;
+  position: sticky;
+  top: 0;
+  z-index: 100;
+}
+.header h1 { font-size: 18px; font-weight: 600; }
+/* 标签切换 */
+.tabs {
+  display: flex;
+  background: #fff;
+  border-bottom: 1px solid #e5e5ea;
+  position: sticky;
+  top: 52px;
+  z-index: 99;
+}
+.tab {
+  flex: 1;
+  text-align: center;
+  padding: 12px 0;
+  font-size: 15px;
+  color: #86868b;
+  cursor: pointer;
+  border-bottom: 2px solid transparent;
+  transition: all 0.2s;
+}
+.tab.active {
+  color: #007aff;
+  border-bottom-color: #007aff;
+  font-weight: 500;
+}
+.page { display: none; padding: 12px; }
+.page.active { display: block; }
+/* 信息卡片 */
+.info-card {
+  background: #fff;
+  border-radius: 12px;
+  padding: 16px;
+  margin-bottom: 12px;
+}
+.info-row {
+  display: flex;
+  align-items: center;
+  margin-bottom: 12px;
+}
+.info-row:last-child { margin-bottom: 0; }
+.info-label {
+  width: 80px;
+  font-size: 14px;
+  color: #6e6e73;
+  flex-shrink: 0;
+}
+.info-input {
+  flex: 1;
+  border: none;
+  border-bottom: 1px solid #e5e5ea;
+  padding: 6px 0;
+  font-size: 16px;
+  outline: none;
+  background: transparent;
+  min-height: 24px;
+}
+.info-input:focus { border-bottom-color: #007aff; }
+.info-input[readonly] { color: #86868b; }
+/* 部位选择 */
+.section-title {
+  font-size: 14px;
+  color: #6e6e73;
+  margin: 16px 0 8px;
+  padding-left: 4px;
+}
+.part-grid {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  margin-bottom: 12px;
+}
+.part-tag {
+  padding: 6px 14px;
+  border-radius: 16px;
+  background: #f0f0f5;
+  font-size: 14px;
+  cursor: pointer;
+  transition: all 0.2s;
+  border: 1px solid transparent;
+}
+.part-tag.selected {
+  background: #007aff;
+  color: #fff;
+}
+/* 动作选择列表 */
+.exercise-list {
+  background: #fff;
+  border-radius: 12px;
+  margin-bottom: 12px;
+  overflow: hidden;
+}
+.exercise-group {
+  border-bottom: 1px solid #f0f0f5;
+}
+.exercise-group:last-child { border-bottom: none; }
+.exercise-group-header {
+  padding: 12px 16px;
+  font-size: 15px;
+  font-weight: 600;
+  color: #1d1d1f;
+  background: #fafafa;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+.exercise-group-header .toggle {
+  font-size: 12px;
+  color: #007aff;
+  font-weight: 400;
+}
+.exercise-items {
+  padding: 8px 0;
+}
+.exercise-item {
+  display: flex;
+  align-items: center;
+  padding: 10px 16px;
+  cursor: pointer;
+  transition: background 0.15s;
+}
+.exercise-item:active { background: #f5f5f7; }
+.exercise-checkbox {
+  width: 20px;
+  height: 20px;
+  border: 2px solid #d1d1d6;
+  border-radius: 4px;
+  margin-right: 12px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+  transition: all 0.2s;
+}
+.exercise-item.checked .exercise-checkbox {
+  background: #007aff;
+  border-color: #007aff;
+}
+.exercise-checkbox::after {
+  content: '';
+  width: 5px;
+  height: 9px;
+  border: solid #fff;
+  border-width: 0 2px 2px 0;
+  transform: rotate(45deg) translate(-1px, -1px);
+  opacity: 0;
+  transition: opacity 0.2s;
+}
+.exercise-item.checked .exercise-checkbox::after { opacity: 1; }
+.exercise-name {
+  flex: 1;
+  font-size: 15px;
+}
+/* 训练记录表 */
+.record-table-wrap {
+  background: #fff;
+  border-radius: 12px;
+  overflow: hidden;
+  margin-bottom: 12px;
+}
+.record-table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 13px;
+}
+.record-table th {
+  background: #f5f5f7;
+  padding: 10px 4px;
+  font-weight: 500;
+  color: #6e6e73;
+  font-size: 12px;
+  text-align: center;
+}
+.record-table td {
+  padding: 8px 4px;
+  border-top: 1px solid #f0f0f5;
+  text-align: center;
+}
+.record-table .part-cell {
+  font-weight: 600;
+  font-size: 14px;
+  background: #fafafa;
+}
+.record-table input {
+  width: 100%;
+  border: none;
+  text-align: center;
+  font-size: 14px;
+  outline: none;
+  background: transparent;
+}
+.record-table input:focus { background: #f0f7ff; }
+/* 汇总区 */
+.summary-section {
+  background: #fff;
+  border-radius: 12px;
+  padding: 16px;
+  margin-bottom: 16px;
+}
+.summary-title {
+  font-size: 14px;
+  color: #6e6e73;
+  margin-bottom: 10px;
+}
+.summary-content {
+  background: #f5f5f7;
+  border-radius: 8px;
+  padding: 12px;
+  font-size: 14px;
+  line-height: 1.8;
+  white-space: pre-wrap;
+  word-break: break-all;
+  min-height: 60px;
+  color: #1d1d1f;
+}
+/* 按钮 */
+.btn-primary {
+  display: block;
+  width: 100%;
+  padding: 14px;
+  background: #007aff;
+  color: #fff;
+  border: none;
+  border-radius: 12px;
+  font-size: 16px;
+  font-weight: 500;
+  cursor: pointer;
+  transition: opacity 0.2s;
+}
+.btn-primary:active { opacity: 0.8; }
+.btn-secondary {
+  display: block;
+  width: 100%;
+  padding: 12px;
+  background: #f0f0f5;
+  color: #007aff;
+  border: none;
+  border-radius: 10px;
+  font-size: 15px;
+  cursor: pointer;
+  margin-top: 8px;
+}
+/* 模板管理页 */
+.tpl-item {
+  background: #fff;
+  border-radius: 12px;
+  margin-bottom: 12px;
+  overflow: hidden;
+}
+.tpl-part-header {
+  padding: 14px 16px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  border-bottom: 1px solid #f0f0f5;
+}
+.tpl-part-name {
+  font-size: 16px;
+  font-weight: 600;
+}
+.tpl-part-actions {
+  display: flex;
+  gap: 8px;
+}
+.tpl-action-btn {
+  padding: 4px 10px;
+  font-size: 13px;
+  border-radius: 6px;
+  border: none;
+  cursor: pointer;
+}
+.tpl-action-btn.danger { background: #ffeaea; color: #ff3b30; }
+.tpl-action-btn.small { background: #f0f0f5; color: #007aff; }
+.tpl-exercise-list {
+  padding: 8px 16px;
+}
+.tpl-exercise-item {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 8px 0;
+  border-bottom: 1px solid #f5f5f7;
+}
+.tpl-exercise-item:last-child { border-bottom: none; }
+.tpl-exercise-name { font-size: 15px; }
+.add-form {
+  background: #fff;
+  border-radius: 12px;
+  padding: 16px;
+  margin-bottom: 12px;
+}
+.add-form input {
+  width: 100%;
+  padding: 12px;
+  border: 1px solid #d1d1d6;
+  border-radius: 8px;
+  font-size: 16px;
+  margin-bottom: 8px;
+  outline: none;
+}
+.add-form input:focus { border-color: #007aff; }
+/* Toast */
+.toast {
+  position: fixed;
+  bottom: 100px;
+  left: 50%;
+  transform: translateX(-50%);
+  background: rgba(0,0,0,0.8);
+  color: #fff;
+  padding: 10px 20px;
+  border-radius: 8px;
+  font-size: 14px;
+  z-index: 999;
+  opacity: 0;
+  transition: opacity 0.3s;
+  pointer-events: none;
+}
+.toast.show { opacity: 1; }
+/* 底部操作栏 */
+.bottom-bar {
+  position: fixed;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  background: #fff;
+  padding: 12px 16px;
+  box-shadow: 0 -2px 10px rgba(0,0,0,0.05);
+  z-index: 100;
+  display: flex;
+  gap: 10px;
+}
+.bottom-bar .btn-primary { flex: 1; margin-top: 0; }
+.bottom-bar .btn-secondary { width: auto; padding: 14px 20px; margin-top: 0; }
+/* 空状态 */
+.empty-state {
+  text-align: center;
+  padding: 40px 20px;
+  color: #86868b;
+  font-size: 14px;
+}
+/* 历史记录 */
+.history-item {
+  background: #fff;
+  border-radius: 12px;
+  padding: 14px 16px;
+  margin-bottom: 10px;
+  cursor: pointer;
+}
+.history-item:active { background: #f5f5f7; }
+.history-header {
+  display: flex;
+  justify-content: space-between;
+  margin-bottom: 6px;
+}
+.history-student { font-weight: 600; font-size: 15px; }
+.history-date { color: #86868b; font-size: 13px; }
+.history-preview { font-size: 13px; color: #6e6e73; line-height: 1.5; }
+</style>
 </head>
 <body>
-<div class="header-bar">健身训练记录</div>
-<div class="tab-top-wrap">
-  <div class="tab-top active" data-tab="record">记录</div>
-  <div class="tab-top" data-tab="template">模板管理</div>
-  <div class="tab-top" data-tab="history">历史记录</div>
+<div class="header">
+  <h1>健身训练记录</h1>
 </div>
-<div class="container">
-  <!-- ========== 记录页面 ========== -->
-  <div id="record" class="tab-content">
-    <div class="card">
-      <div class="input-line">
-        <label>学员姓名</label>
-        <input id="stuName" placeholder="输入学员姓名" />
-      </div>
-      <div class="input-line">
-        <label>上课时间</label>
-        <input id="classDate" type="date" />
-      </div>
-      <div class="input-line">
-        <label>剩余课程</label>
-        <input id="remainCourse" placeholder="输入剩余节数" type="number" />
-      </div>
+<div class="tabs">
+  <div class="tab active" data-page="record">记录</div>
+  <div class="tab" data-page="template">模板管理</div>
+  <div class="tab" data-page="history">历史记录</div>
+</div>
+<!-- ===== 记录页 ===== -->
+<div class="page active" id="page-record">
+  <div class="info-card">
+    <div class="info-row">
+      <span class="info-label">学员姓名</span>
+      <input class="info-input" id="studentName" placeholder="输入学员姓名">
     </div>
-
-    <div>
-      <div class="card-title">选择训练部位</div>
-      <div class="part-btn-wrap" id="partBtnWrap">
-        <!-- 部位按钮JS生成 -->
-      </div>
+    <div class="info-row">
+      <span class="info-label">上课时间</span>
+      <input class="info-input" id="classDate" readonly>
     </div>
-
-    <div class="card">
-      <div class="action-card-header">
-        <div style="font-size:18px;font-weight:600" id="actionPartTitle">肩</div>
-        <div class="select-all" id="selectAllBtn">全选/取消</div>
-      </div>
-      <div id="actionList"></div>
-    </div>
-
-    <div>
-      <div class="card-title">训练记录</div>
-      <div class="table-wrap">
-        <table>
-          <thead>
-            <tr><th>部位</th><th>动作</th><th>重量(kg)</th><th>次数</th><th>组数</th></tr>
-          </thead>
-          <tbody id="tableBody"></tbody>
-        </table>
-      </div>
-    </div>
-
-    <div>
-      <div class="card-title">训练内容汇总</div>
-      <div class="summary-box" id="summaryText">(训练内容汇总：)</div>
-    </div>
-
-    <div class="bottom-btn-wrap">
-      <button class="bottom-btn blue" id="copyBtn">复制汇总文本</button>
-      <button class="bottom-btn grey" id="saveRecordBtn">保存记录</button>
+    <div class="info-row">
+      <span class="info-label">剩余课程</span>
+      <input class="info-input" id="remainingClasses" type="number" placeholder="输入剩余节数">
     </div>
   </div>
-
-  <!-- ========== 模板管理 ========== -->
-  <div id="template" class="tab-content hidden">
-    <div class="card">
-      <div class="title">新增训练部位 & 动作</div>
-      <div class="input-line">
-        <input id="newPart" placeholder="训练部位，例：肩" />
-        <input id="newAction" placeholder="训练动作，例：坐姿推肩" />
-        <button id="addTemplateBtn">添加模板</button>
-      </div>
-    </div>
-    <div class="card">
-      <div class="title">已保存模板列表</div>
-      <div id="templateList"></div>
-      <div class="bottom-btn-wrap">
-        <button id="exportAll">导出全部备份</button>
-        <button id="importBtn">导入备份</button>
-        <input type="file" id="fileInput" accept=".json" class="hidden">
-      </div>
-    </div>
+  <div class="section-title">选择训练部位</div>
+  <div class="part-grid" id="partGrid"></div>
+  <div class="section-title">选择训练动作</div>
+  <div class="exercise-list" id="exerciseList">
+    <div class="empty-state">请先选择训练部位</div>
   </div>
-
-  <!-- ========== 历史记录 ========== -->
-  <div id="history" class="tab-content hidden">
-    <div class="card">
-      <div class="title">历史训练记录</div>
-      <div id="historyList"></div>
-    </div>
+  <div class="section-title">训练记录</div>
+  <div class="record-table-wrap" id="recordTableWrap">
+    <div class="empty-state">勾选动作后自动生成记录表格</div>
+  </div>
+  <div class="summary-section">
+    <div class="summary-title">训练内容汇总</div>
+    <div class="summary-content" id="summaryContent"></div>
+  </div>
+  <div class="bottom-bar">
+    <button class="btn-primary" onclick="copySummary()">复制汇总文本</button>
+    <button class="btn-secondary" onclick="saveRecord()">保存记录</button>
   </div>
 </div>
-
+<!-- ===== 模板管理页 ===== -->
+<div class="page" id="page-template">
+  <div class="add-form">
+    <input type="text" id="newPartName" placeholder="新增训练部位，如：肩、胸、背">
+    <button class="btn-primary" onclick="addPart()" style="padding:10px;font-size:14px;">添加部位</button>
+  </div>
+  <div id="tplList"></div>
+</div>
+<!-- ===== 历史记录页 ===== -->
+<div class="page" id="page-history">
+  <div id="historyList">
+    <div class="empty-state">暂无历史记录</div>
+  </div>
+</div>
+<div class="toast" id="toast"></div>
 <script>
-// 本地存储KEY
-const STORAGE_KEY_TPL = "train_template";
-const STORAGE_KEY_HIST = "train_history";
-
-// 默认模板（肩、胸、背、臀腿）
-let templateList = JSON.parse(localStorage.getItem(STORAGE_KEY_TPL)) || [
-  {part:"肩",action:"坐姿推肩"},
-  {part:"肩",action:"反向飞鸟"},
-  {part:"肩",action:"哑铃侧平举"},
-  {part:"胸",action:"平板推胸"},
-  {part:"胸",action:"绳索飞鸟"},
-  {part:"背",action:"高位下拉"},
-  {part:"背",action:"坐姿划船"},
-  {part:"臀腿",action:"臀推"},
-  {part:"臀腿",action:"深蹲"},
+// ===== 数据管理 =====
+const STORAGE_KEY = 'fitness_trainer_data';
+const HISTORY_KEY = 'fitness_trainer_history';
+// 默认模板
+const defaultTemplate = [
+  { id: 'p1', name: '肩', exercises: [
+    { id: 'e1', name: '坐姿推肩' },
+    { id: 'e2', name: '反向飞鸟' },
+    { id: 'e3', name: '哑铃侧平举' }
+  ]},
+  { id: 'p2', name: '胸', exercises: [
+    { id: 'e4', name: '平板推胸' },
+    { id: 'e5', name: '飞鸟' },
+    { id: 'e6', name: '上斜卧推' }
+  ]},
+  { id: 'p3', name: '背', exercises: [
+    { id: 'e7', name: '高位下拉' },
+    { id: 'e8', name: '坐姿划船' },
+    { id: 'e9', name: '硬拉' }
+  ]},
+  { id: 'p4', name: '臀腿', exercises: [
+    { id: 'e10', name: '髋外展' },
+    { id: 'e11', name: '臀推' },
+    { id: 'e12', name: '深蹲' }
+  ]}
 ];
-let historyList = JSON.parse(localStorage.getItem(STORAGE_KEY_HIST)) || [];
-let tableRows = [];
-let currentSelectPart = "肩";
+let templateData = loadTemplate();
+let selectedParts = new Set();
+let selectedExercises = new Set();
+// 【新增】全局存储每个动作填写的重量/次数/组数，勾选取消不会丢失
+let exerciseValueStore = {};
 
-// 初始化日期
-const today = new Date();
-const dateStr = today.toISOString().split('T')[0];
-document.getElementById("classDate").value = dateStr;
-
-// 监听输入，实时更新汇总
-document.getElementById("stuName").addEventListener('input', updateSummary);
-document.getElementById("remainCourse").addEventListener('input', updateSummary);
-document.getElementById("classDate").addEventListener('input', updateSummary);
-
-// 顶部标签切换
-document.querySelectorAll(".tab-top").forEach(tab=>{
-  tab.onclick = ()=>{
-    document.querySelectorAll(".tab-top").forEach(t=>t.classList.remove("active"));
-    tab.classList.add("active");
-    const target = tab.dataset.tab;
-    document.querySelectorAll(".tab-content").forEach(c=>c.classList.add("hidden"));
-    document.getElementById(target).classList.remove("hidden");
-    if(target === "template") renderTemplateList();
-    if(target === "history") renderHistory();
-  }
-})
-
-// 渲染部位按钮（肩/胸/背/臀腿）
-function renderPartButtons(){
-  const wrap = document.getElementById("partBtnWrap");
-  const parts = [...new Set(templateList.map(x=>x.part))];
-  wrap.innerHTML = "";
-  parts.forEach(p=>{
-    const btn = document.createElement("button");
-    btn.className = "part-btn" + (p===currentSelectPart ? " active":"");
-    btn.innerText = p;
-    btn.onclick = ()=>{
-      currentSelectPart = p;
-      renderPartButtons();
-      renderActionList();
-    }
-    wrap.appendChild(btn);
-  })
+function loadTemplate() {
+  try {
+    const saved = localStorage.getItem(STORAGE_KEY);
+    if (saved) return JSON.parse(saved);
+  } catch(e) {}
+  return JSON.parse(JSON.stringify(defaultTemplate));
 }
+function saveTemplate() {
+  localStorage.setItem(STORAGE_KEY, JSON.stringify(templateData));
+}
+function loadHistory() {
+  try {
+    return JSON.parse(localStorage.getItem(HISTORY_KEY)) || [];
+  } catch(e) { return []; }
+}
+function saveHistory(history) {
+  localStorage.setItem(HISTORY_KEY, JSON.stringify(history));
+}
+// ===== 工具函数 =====
+function showToast(msg) {
+  const t = document.getElementById('toast');
+  t.textContent = msg;
+  t.classList.add('show');
+  setTimeout(() => t.classList.remove('show'), 1800);
+}
+function getToday() {
+  const d = new Date();
+  return `${d.getFullYear()}/${d.getMonth()+1}/${d.getDate()}`;
+}
+function genId() {
+  return 'id_' + Date.now() + '_' + Math.random().toString(36).substr(2, 6);
+}
+// ===== 标签切换 =====
+document.querySelectorAll('.tab').forEach(tab => {
+  tab.addEventListener('click', () => {
+    document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
+    document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
+    tab.classList.add('active');
+    document.getElementById('page-' + tab.dataset.page).classList.add('active');
+    if (tab.dataset.page === 'template') renderTemplate();
+    if (tab.dataset.page === 'history') renderHistory();
+  });
+});
+// ===== 记录页渲染 =====
+function initRecordPage() {
+  document.getElementById('classDate').value = getToday();
+  renderPartGrid();
 
-// 渲染当前部位动作列表
-function renderActionList(){
-  document.getElementById("actionPartTitle").innerText = currentSelectPart;
-  const container = document.getElementById("actionList");
-  container.innerHTML = "";
-  const acts = templateList.filter(i=>i.part === currentSelectPart);
-  acts.forEach(item=>{
-    const div = document.createElement("div");
-    div.className = "action-item";
-    const existRow = tableRows.find(r=>r.part===item.part && r.action===item.action);
-    const checked = existRow ? "checked" : "";
-    div.innerHTML = `<input type="checkbox" class="action-check" data-part="${item.part}" data-action="${item.action}" ${checked}> ${item.action}`;
-    container.appendChild(div);
-  })
-  // 勾选事件
-  document.querySelectorAll(".action-check").forEach(cb=>{
-    cb.onchange = function(){
-      const p = this.dataset.part;
-      const a = this.dataset.action;
-      if(this.checked){
-        const exist = tableRows.find(r=>r.part===p && r.action===a);
-        if(!exist){
-          tableRows.push({part:p,action:a,weight:"0",count:"0",group:"0"});
-        }
-      }else{
-        tableRows = tableRows.filter(r=>!(r.part===p && r.action===a));
+  //【需求2：监听学员姓名、剩余课程输入，实时刷新汇总】
+  document.getElementById('studentName').addEventListener('input', updateSummary);
+  document.getElementById('remainingClasses').addEventListener('input', updateSummary);
+}
+function renderPartGrid() {
+  const grid = document.getElementById('partGrid');
+  grid.innerHTML = '';
+  templateData.forEach(part => {
+    const tag = document.createElement('div');
+    tag.className = 'part-tag' + (selectedParts.has(part.id) ? ' selected' : '');
+    tag.textContent = part.name;
+    tag.onclick = () => {
+      if (selectedParts.has(part.id)) {
+        selectedParts.delete(part.id);
+        // 取消该部位所有动作
+        part.exercises.forEach(ex => selectedExercises.delete(ex.id));
+      } else {
+        selectedParts.add(part.id);
       }
-      renderTable();
+      renderPartGrid();
+      renderExerciseList();
+      renderRecordTable();
       updateSummary();
-    }
-  })
+    };
+    grid.appendChild(tag);
+  });
 }
-
-// 全选取消按钮
-document.getElementById("selectAllBtn").onclick = function(){
-  const acts = templateList.filter(i=>i.part === currentSelectPart);
-  const allChecked = acts.every(item=>tableRows.find(r=>r.part===item.part && r.action===item.action));
-  if(allChecked){
-    //全部取消
-    acts.forEach(item=>{
-      tableRows = tableRows.filter(r=>!(r.part===item.part && r.action===item.action));
-    })
-  }else{
-    //全部选中
-    acts.forEach(item=>{
-      const exist = tableRows.find(r=>r.part===item.part && r.action===item.action);
-      if(!exist){
-        tableRows.push({part:item.part,action:item.action,weight:"0",count:"0",group:"0"});
-      }
-    })
+function renderExerciseList() {
+  const list = document.getElementById('exerciseList');
+  if (selectedParts.size === 0) {
+    list.innerHTML = '<div class="empty-state">请先选择训练部位</div>';
+    return;
   }
-  renderActionList();
-  renderTable();
+  list.innerHTML = '';
+  templateData.forEach(part => {
+    if (!selectedParts.has(part.id)) return;
+    const group = document.createElement('div');
+    group.className = 'exercise-group';
+    group.innerHTML = `
+      <div class="exercise-group-header">
+        <span>${part.name}</span>
+        <span class="toggle" onclick="toggleAllPart('${part.id}')">全选/取消</span>
+      </div>
+      <div class="exercise-items"></div>
+    `;
+    const itemsWrap = group.querySelector('.exercise-items');
+    part.exercises.forEach(ex => {
+      const item = document.createElement('div');
+      item.className = 'exercise-item' + (selectedExercises.has(ex.id) ? ' checked' : '');
+      item.innerHTML = `
+        <div class="exercise-checkbox"></div>
+        <div class="exercise-name">${ex.name}</div>
+      `;
+      item.onclick = () => {
+        if (selectedExercises.has(ex.id)) {
+          selectedExercises.delete(ex.id);
+        } else {
+          selectedExercises.add(ex.id);
+        }
+        renderExerciseList();
+        renderRecordTable();
+        updateSummary();
+      };
+      itemsWrap.appendChild(item);
+    });
+    list.appendChild(group);
+  });
+}
+function toggleAllPart(partId) {
+  const part = templateData.find(p => p.id === partId);
+  if (!part) return;
+  const allSelected = part.exercises.every(ex => selectedExercises.has(ex.id));
+  if (allSelected) {
+    part.exercises.forEach(ex => selectedExercises.delete(ex.id));
+  } else {
+    part.exercises.forEach(ex => selectedExercises.add(ex.id));
+  }
+  renderExerciseList();
+  renderRecordTable();
   updateSummary();
 }
-
-// 渲染训练表格
-function renderTable(){
-  const tbody = document.getElementById("tableBody");
-  tbody.innerHTML = "";
-  tableRows.forEach((row,idx)=>{
-    const tr = document.createElement("tr");
-    tr.innerHTML = `
-      <td>${row.part}</td>
-      <td>${row.action}</td>
-      <td><input value="${row.weight}" data-idx="${idx}" class="inp-weight"></td>
-      <td><input value="${row.count}" data-idx="${idx}" class="inp-count"></td>
-      <td><input value="${row.group}" data-idx="${idx}" class="inp-group"></td>
-    `
-    tbody.appendChild(tr);
-  })
-  document.querySelectorAll(".inp-weight,.inp-count,.inp-group").forEach(input=>{
-    input.oninput = function(){
-      const i = this.dataset.idx;
-      if(this.classList.contains("inp-weight")) tableRows[i].weight=this.value;
-      if(this.classList.contains("inp-count")) tableRows[i].count=this.value;
-      if(this.classList.contains("inp-group")) tableRows[i].group=this.value;
-      updateSummary();
+function renderRecordTable() {
+  const wrap = document.getElementById('recordTableWrap');
+  if (selectedExercises.size === 0) {
+    wrap.innerHTML = '<div class="empty-state">勾选动作后自动生成记录表格</div>';
+    return;
+  }
+  let html = `<table class="record-table">
+    <colgroup>
+      <col style="width:15%">
+      <col style="width:30%">
+      <col style="width:18%">
+      <col style="width:18%">
+      <col style="width:19%">
+    </colgroup>
+    <thead>
+      <tr>
+        <th>部位</th>
+        <th>动作</th>
+        <th>重量(kg)</th>
+        <th>次数</th>
+        <th>组数</th>
+      </tr>
+    </thead>
+    <tbody>
+  `;
+  templateData.forEach(part => {
+    if (!selectedParts.has(part.id)) return;
+    const selectedExs = part.exercises.filter(ex => selectedExercises.has(ex.id));
+    if (selectedExs.length === 0) return;
+    selectedExs.forEach((ex, idx) => {
+      // 读取已保存的数据，如果不存在初始化空对象
+      if(!exerciseValueStore[ex.id]) exerciseValueStore[ex.id] = {weight:"", reps:"", sets:""};
+      const saved = exerciseValueStore[ex.id];
+      html += `<tr>
+        <td class="part-cell">${idx === 0 ? part.name : ''}</td>
+        <td>${ex.name}</td>
+        <td><input type="number" data-exid="${ex.id}" data-field="weight" value="${saved.weight}" placeholder="0" oninput="handleInputChange('${ex.id}', 'weight', this.value)"></td>
+        <td><input type="number" data-exid="${ex.id}" data-field="reps" value="${saved.reps}" placeholder="0" oninput="handleInputChange('${ex.id}', 'reps', this.value)"></td>
+        <td><input type="number" data-exid="${ex.id}" data-field="sets" value="${saved.sets}" placeholder="0" oninput="handleInputChange('${ex.id}', 'sets', this.value)"></td>
+      </tr>`;
+    });
+  });
+  html += '</tbody></table>';
+  wrap.innerHTML = html;
+}
+// 【新增：输入框变更，保存值到全局存储】
+function handleInputChange(exId, field, val){
+  if(!exerciseValueStore[exId]) exerciseValueStore[exId] = {weight:"", reps:"", sets:""};
+  exerciseValueStore[exId][field] = val;
+  updateSummary();
+}
+function updateSummary() {
+  const student = document.getElementById('studentName').value || '学员';
+  const date = document.getElementById('classDate').value;
+  const remaining = document.getElementById('remainingClasses').value || '0';
+  
+  //【需求1：删除开头（训练内容汇总：）文字】
+  let summary = `${student}，${date}，剩余课程：${remaining}节`;
+  
+  templateData.forEach(part => {
+    if (!selectedParts.has(part.id)) return;
+    const selectedExs = part.exercises.filter(ex => selectedExercises.has(ex.id));
+    if (selectedExs.length === 0) return;
+    
+    const exParts = [];
+    selectedExs.forEach(ex => {
+      const storeData = exerciseValueStore[ex.id] || {weight:"", reps:"", sets:""};
+      const weight = storeData.weight;
+      const reps = storeData.reps;
+      const sets = storeData.sets;
+      if (weight || reps || sets) {
+        let str = ex.name;
+        if (weight) str += `${weight}kg`;
+        if (reps) str += `*${reps}`;
+        if (sets) str += `*${sets}`;
+        exParts.push(str);
+      }
+    });
+    if (exParts.length > 0) {
+      summary += `\n${part.name}：${exParts.join('、')}`;
     }
-  })
+  });
+  document.getElementById('summaryContent').textContent = summary;
 }
-
-// 更新汇总文本
-function updateSummary(){
-  const name = document.getElementById("stuName").value || "";
-  const date = document.getElementById("classDate").value;
-  const remain = document.getElementById("remainCourse").value || "";
-  let text = "";
-  if(name) text += `学员：${name}\n`;
-  if(date) text += `上课时间：${date}\n`;
-  if(remain) text += `剩余课程：${remain}节\n`;
-  const groupByPart = {};
-  tableRows.forEach(r=>{
-    if(!groupByPart[r.part]) groupByPart[r.part]=[];
-    groupByPart[r.part].push(r);
-  })
-  for(let p in groupByPart){
-    text += `${p}：`
-    const acts = groupByPart[p].map(a=>{
-      let str = a.action;
-      if(a.weight) str += ` ${a.weight}kg`;
-      if(a.count) str += ` ×${a.count}`;
-      if(a.group) str += ` ×${a.group}组`;
-      return str;
-    })
-    text += acts.join("、") + "\n";
+function copySummary() {
+  const text = document.getElementById('summaryContent').textContent;
+  if (!text) {
+    showToast('暂无内容可复制');
+    return;
   }
-  if(!text) text = "(训练内容汇总：)";
-  document.getElementById("summaryText").innerText = text;
+  navigator.clipboard.writeText(text).then(() => {
+    showToast('已复制到剪贴板');
+  }).catch(() => {
+    // 兼容方案
+    const ta = document.createElement('textarea');
+    ta.value = text;
+    document.body.appendChild(ta);
+    ta.select();
+    document.execCommand('copy');
+    document.body.removeChild(ta);
+    showToast('已复制到剪贴板');
+  });
 }
-
-// 复制汇总
-document.getElementById("copyBtn").onclick = async ()=>{
-  const txt = document.getElementById("summaryText").innerText;
-  try{
-    await navigator.clipboard.writeText(txt);
-    alert("✅ 复制成功！");
-  }catch(e){
-    alert("复制失败，请手动选中文字复制");
+function saveRecord() {
+  const student = document.getElementById('studentName').value;
+  if (!student) {
+    showToast('请先输入学员姓名');
+    return;
   }
+  const summary = document.getElementById('summaryContent').textContent;
+  const history = loadHistory();
+  history.unshift({
+    id: genId(),
+    student: student,
+    date: document.getElementById('classDate').value,
+    remaining: document.getElementById('remainingClasses').value,
+    summary: summary,
+    parts: Array.from(selectedParts),
+    exercises: Array.from(selectedExercises),
+    exerciseValueStore: JSON.parse(JSON.stringify(exerciseValueStore)),
+    createdAt: Date.now()
+  });
+  saveHistory(history);
+  showToast('记录已保存');
 }
-
-// 保存记录
-document.getElementById("saveRecordBtn").onclick = ()=>{
-  const rec = {
-    name:document.getElementById("stuName").value,
-    date:document.getElementById("classDate").value,
-    remain:document.getElementById("remainCourse").value,
-    rows:JSON.parse(JSON.stringify(tableRows)),
-    summary:document.getElementById("summaryText").innerText
+// ===== 模板管理页 =====
+function renderTemplate() {
+  const list = document.getElementById('tplList');
+  list.innerHTML = '';
+  templateData.forEach(part => {
+    const item = document.createElement('div');
+    item.className = 'tpl-item';
+    item.innerHTML = `
+      <div class="tpl-part-header">
+        <span class="tpl-part-name">${part.name}</span>
+        <div class="tpl-part-actions">
+          <button class="tpl-action-btn small" onclick="addExercisePrompt('${part.id}')">+ 动作</button>
+          <button class="tpl-action-btn danger" onclick="deletePart('${part.id}')">删除</button>
+        </div>
+      </div>
+      <div class="tpl-exercise-list">
+        ${part.exercises.map(ex => `
+          <div class="tpl-exercise-item">
+            <span class="tpl-exercise-name">${ex.name}</span>
+            <button class="tpl-action-btn danger" onclick="deleteExercise('${part.id}', '${ex.id}')">删除</button>
+          </div>
+        `).join('')}
+      </div>
+    `;
+    list.appendChild(item);
+  });
+}
+function addPart() {
+  const nameInput = document.getElementById('newPartName');
+  const name = nameInput.value.trim();
+  if (!name) { showToast('请输入部位名称'); return; }
+  if (templateData.some(p => p.name === name)) { showToast('该部位已存在'); return; }
+  templateData.push({ id: genId(), name: name, exercises: [] });
+  saveTemplate();
+  nameInput.value = '';
+  renderTemplate();
+  renderPartGrid();
+  showToast('已添加部位');
+}
+function deletePart(partId) {
+  if (!confirm('确定删除该部位及其所有动作？')) return;
+  templateData = templateData.filter(p => p.id !== partId);
+  selectedParts.delete(partId);
+  saveTemplate();
+  renderTemplate();
+  renderPartGrid();
+  renderExerciseList();
+  renderRecordTable();
+  updateSummary();
+}
+function addExercisePrompt(partId) {
+  const name = prompt('请输入动作名称：');
+  if (!name || !name.trim()) return;
+  const part = templateData.find(p => p.id === partId);
+  if (!part) return;
+  if (part.exercises.some(ex => ex.name === name.trim())) { showToast('该动作已存在'); return; }
+  part.exercises.push({ id: genId(), name: name.trim() });
+  saveTemplate();
+  renderTemplate();
+}
+function deleteExercise(partId, exId) {
+  const part = templateData.find(p => p.id === partId);
+  if (!part) return;
+  part.exercises = part.exercises.filter(ex => ex.id !== exId);
+  selectedExercises.delete(exId);
+  // 删除动作同时清理存储的数据
+  delete exerciseValueStore[exId];
+  saveTemplate();
+  renderTemplate();
+  renderExerciseList();
+  renderRecordTable();
+  updateSummary();
+}
+// ===== 历史记录页 =====
+function renderHistory() {
+  const list = document.getElementById('historyList');
+  const history = loadHistory();
+  if (history.length === 0) {
+    list.innerHTML = '<div class="empty-state">暂无历史记录</div>';
+    return;
   }
-  if(!rec.name){alert("请填写学员姓名");return;}
-  historyList.unshift(rec);
-  localStorage.setItem(STORAGE_KEY_HIST, JSON.stringify(historyList));
-  alert("✅ 记录保存成功！");
-}
-
-//模板相关
-document.getElementById("addTemplateBtn").onclick = ()=>{
-  const p = document.getElementById("newPart").value.trim();
-  const a = document.getElementById("newAction").value.trim();
-  if(!p||!a){alert("请填写部位和动作");return;}
-  templateList.push({part:p,action:a});
-  localStorage.setItem(STORAGE_KEY_TPL, JSON.stringify(templateList));
-  renderPartButtons();
-  renderTemplateList();
-  document.getElementById("newPart").value="";
-  document.getElementById("newAction").value="";
-}
-function renderTemplateList(){
-  const wrap = document.getElementById("templateList");
-  wrap.innerHTML="";
-  templateList.forEach((item,idx)=>{
-    const div = document.createElement("div");
-    div.style="padding:8px 0;display:flex;justify-content:space-between;";
-    div.innerHTML = `<span>${item.part} - ${item.action}</span> <button data-idx="${idx}">删除</button>`
-    wrap.appendChild(div);
-  })
-  document.querySelectorAll("#templateList button").forEach(btn=>{
-    btn.onclick = function(){
-      const i = this.dataset.idx;
-      templateList.splice(i,1);
-      localStorage.setItem(STORAGE_KEY_TPL, JSON.stringify(templateList));
-      renderPartButtons();
-      renderTemplateList();
-    }
-  })
-}
-//历史记录
-function renderHistory(){
-  const wrap = document.getElementById("historyList");
-  if(historyList.length===0){wrap.innerText="暂无历史记录";return;}
-  wrap.innerHTML="";
-  historyList.forEach((h,idx)=>{
-    const div = document.createElement("div");
-    div.style="padding:12px 0;border-bottom:1px solid #eee;";
+  list.innerHTML = '';
+  history.forEach(item => {
+    const div = document.createElement('div');
+    div.className = 'history-item';
     div.innerHTML = `
-      <div style="font-weight:500">${h.name}｜${h.date}</div>
-      <div style="margin:6px 0;white-space:pre-wrap;font-size:14px;color:#444">${h.summary}</div>
-      <button class="copy-his" data-idx="${idx}">复制</button>
-    `
-    wrap.appendChild(div);
-  })
-  document.querySelectorAll(".copy-his").forEach(btn=>{
-    btn.onclick = async function(){
-      const i = this.dataset.idx;
-      const txt = historyList[i].summary;
-      await navigator.clipboard.writeText(txt);
-      alert("✅ 已复制");
-    }
-  })
+      <div class="history-header">
+        <span class="history-student">${item.student}</span>
+        <span class="history-date">${item.date}</span>
+      </div>
+      <div class="history-preview">${item.summary.substring(0, 80)}${item.summary.length > 80 ? '...' : ''}</div>
+    `;
+    div.onclick = () => {
+      if (confirm('载入这条记录？')) {
+        document.getElementById('studentName').value = item.student;
+        document.getElementById('classDate').value = item.date;
+        document.getElementById('remainingClasses').value = item.remaining;
+        selectedParts = new Set(item.parts);
+        selectedExercises = new Set(item.exercises);
+        exerciseValueStore = item.exerciseValueStore || {};
+        renderPartGrid();
+        renderExerciseList();
+        renderRecordTable();
+        updateSummary();
+        showToast('已载入记录');
+      }
+    };
+    list.appendChild(div);
+  });
 }
-//导出导入
-document.getElementById("exportAll").onclick = ()=>{
-  const backup = {template:templateList, history:historyList};
-  const blob = new Blob([JSON.stringify(backup,null,2)],{type:"application/json"});
-  const url = URL.createObjectURL(blob);
-  const a = document.createElement("a");
-  a.href = url;
-  a.download = "训练记录备份.json";
-  a.click();
-  URL.revokeObjectURL(url);
-}
-document.getElementById("importBtn").onclick = ()=>{document.getElementById("fileInput").click();}
-document.getElementById("fileInput").onchange = function(e){
-  const f = e.target.files[0];
-  const reader = new FileReader();
-  reader.onload = ev=>{
-    const data = JSON.parse(ev.target.result);
-    templateList = data.template;
-    historyList = data.history;
-    localStorage.setItem(STORAGE_KEY_TPL, JSON.stringify(templateList));
-    localStorage.setItem(STORAGE_KEY_HIST, JSON.stringify(historyList));
-    renderPartButtons();
-    renderTemplateList();
-    alert("✅ 备份导入成功");
-  }
-  reader.readAsText(f);
-}
-
-//页面初始化
-renderPartButtons();
-renderActionList();
-renderTable();
-updateSummary();
-renderTemplateList();
+// ===== 初始化 =====
+initRecordPage();
 </script>
 </body>
 </html>
