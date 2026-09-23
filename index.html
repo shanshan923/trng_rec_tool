@@ -24,6 +24,11 @@
     .hidden {display:none;}
     .template-item {padding:8px;border-bottom:1px solid #eee;display:flex;justify-content:space-between;align-items:center;}
     .del-btn {background:#e74c3c;padding:4px 8px;font-size:14px;}
+    /* 手机端表格适配 */
+    @media screen and (max-width:768px){
+      th,td {padding:6px 4px;font-size:14px;}
+      td input {padding:8px 4px;font-size:14px;min-width:50px;}
+    }
   </style>
 </head>
 <body>
@@ -63,7 +68,6 @@
         <tbody id="tableBody"></tbody>
       </table>
       <div class="row">
-        <!-- 移除新增一行按钮，只保留清空表格 -->
         <button id="clearTableBtn" class="secondary">清空表格</button>
       </div>
     </div>
@@ -199,18 +203,6 @@ document.getElementById("partSelect").onchange = function(){
 }
 
 // 表格行操作
-function addTableRow(part,action,w="",cnt="",group=""){
-  const exist = tableRows.find(r=>r.part===part && r.action===action);
-  if(exist) return;
-  tableRows.push({part,action,weight:w,count:cnt,group});
-  renderTable();
-  updateSummary();
-}
-function removeRowByAction(part,action){
-  tableRows = tableRows.filter(r=>!(r.part===part && r.action===action));
-  renderTable();
-  updateSummary();
-}
 function renderTable(){
   const tbody = document.getElementById("tableBody");
   tbody.innerHTML = "";
