@@ -1,0 +1,397 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
+  <title>私教训练记录</title>
+  <style>
+    * {box-sizing: border-box;margin:0;padding:0;font-family: -apple-system,BlinkMacSystemFont,Segoe UI,Roboto,sans-serif;}
+    body {background:#f7f8fa;padding:12px;font-size:16px;color:#222;}
+    .card {background:#fff;border-radius:12px;padding:14px;margin-bottom:14px;box-shadow:0 1px 4px #00000010;}
+    .title {font-size:18px;font-weight:600;margin-bottom:12px;}
+    .row {display:flex;gap:8px;margin-bottom:10px;flex-wrap:wrap;align-items:center;}
+    input, select {font-size:16px;padding:10px;border:1px solid #d8d8d8;border-radius:8px;flex:1;min-width:110px;}
+    button {font-size:16px;padding:10px 14px;border:none;border-radius:8px;background:#3b77ff;color:#fff;cursor:pointer;white-space:nowrap;}
+    button.secondary {background:#888;}
+    button.success {background:#27ae60;}
+    table {width:100%;border-collapse:collapse;margin:12px 0;}
+    th,td {border:1px solid #ddd;padding:10px;text-align:center;}
+    th {background:#f3f4f6;font-weight:500;}
+    .summary-box {background:#f0f6ff;padding:12px;border-radius:10px;white-space:pre-wrap;margin-top:10px;}
+    .tab-wrap {display:flex;gap:6px;margin-bottom:12px;}
+    .tab {padding:8px 12px;border-radius:8px;background:#eee;cursor:pointer;flex:1;text-align:center;}
+    .tab.active {background:#3b77ff;color:white;}
+    .hidden {display:none;}
+    .template-item {padding:8px;border-bottom:1px solid #eee;display:flex;justify-content:space-between;align-items:center;}
+    .del-btn {background:#e74c3c;padding:4px 8px;font-size:14px;}
+  </style>
+</head>
+<body>
+  <div class="tab-wrap">
+    <div class="tab active" data-tab="record">训练记录</div>
+    <div class="tab" data-tab="template">动作模板</div>
+    <div class="tab" data-tab="history">历史记录</div>
+  </div>
+
+  <!-- ========== 训练记录页面 ========== -->
+  <div id="record" class="tab-content">
+    <div class="card">
+      <div class="title">学员信息</div>
+      <div class="row">
+        <input id="stuName" placeholder="学员姓名" />
+        <input id="remainCourse" placeholder="剩余课程" type="number" />
+      </div>
+      <div class="row">
+        <input id="classDate" type="date" />
+      </div>
+    </div>
+
+    <div class="card">
+      <div class="title">选择训练部位</div>
+      <select id="partSelect">
+        <option value="">-- 选择部位 --</option>
+      </select>
+      <div id="actionList" style="margin-top:10px;"></div>
+    </div>
+
+    <div class="card">
+      <div class="title">训练表格</div>
+      <table>
+        <thead>
+          <tr><th>训练部位</th><th>动作</th><th>重量(KG)</th><th>次数</th><th>组数</th></tr>
+        </thead>
+        <tbody id="tableBody"></tbody>
+      </table>
+      <div class="row">
+        <!-- 移除新增一行按钮，只保留清空表格 -->
+        <button id="clearTableBtn" class="secondary">清空表格</button>
+      </div>
+    </div>
+
+    <div class="card">
+      <div class="title">训练汇总（直接复制发给学员）</div>
+      <div class="summary-box" id="summaryText"></div>
+      <div class="row" style="margin-top:10px;">
+        <button id="copyBtn" class="success">一键复制文本</button>
+        <button id="saveRecordBtn">保存本次记录</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- ========== 模板管理页面 ========== -->
+  <div id="template" class="tab-content hidden">
+    <div class="card">
+      <div class="title">新增训练部位 & 动作</div>
+      <div class="row">
+        <input id="newPart" placeholder="训练部位，例：肩" />
+        <input id="newAction" placeholder="训练动作，例：坐姿推肩" />
+        <button id="addTemplateBtn">添加模板</button>
+      </div>
+    </div>
+    <div class="card">
+      <div class="title">已保存模板列表</div>
+      <div id="templateList"></div>
+      <div class="row" style="margin-top:12px;">
+        <button id="exportAll">导出全部备份</button>
+        <button id="importBtn" class="secondary">导入备份</button>
+        <input type="file" id="fileInput" accept=".json" class="hidden">
+      </div>
+    </div>
+  </div>
+
+  <!-- ========== 历史记录页面 ========== -->
+  <div id="history" class="tab-content hidden">
+    <div class="card">
+      <div class="title">历史训练记录</div>
+      <div id="historyList"></div>
+    </div>
+  </div>
+
+<script>
+// 本地存储KEY
+const STORAGE_KEY_TPL = "train_template";
+const STORAGE_KEY_HIST = "train_history";
+
+// 默认模板（和你截图一致）
+let templateList = JSON.parse(localStorage.getItem(STORAGE_KEY_TPL)) || [
+  {part:"肩",action:"坐姿推肩"},
+  {part:"肩",action:"反向飞鸟"},
+  {part:"胸",action:"平板推胸"},
+  {part:"胸",action:"飞鸟"},
+  {part:"背",action:"高位下拉"},
+  {part:"背",action:"坐姿划船"},
+  {part:"臀",action:"髋外展"},
+  {part:"臀",action:"臀推"},
+];
+let historyList = JSON.parse(localStorage.getItem(STORAGE_KEY_HIST)) || [];
+let tableRows = [];
+
+// 初始化日期为今天
+const today = new Date();
+const dateStr = today.toISOString().split('T')[0];
+document.getElementById("classDate").value = dateStr;
+
+// 学员姓名、剩余课程输入框变更时，实时更新汇总
+document.getElementById("stuName").addEventListener('input', updateSummary);
+document.getElementById("remainCourse").addEventListener('input', updateSummary);
+document.getElementById("classDate").addEventListener('input', updateSummary);
+
+// 标签切换
+document.querySelectorAll(".tab").forEach(tab=>{
+  tab.onclick = ()=>{
+    document.querySelectorAll(".tab").forEach(t=>t.classList.remove("active"));
+    tab.classList.add("active");
+    const target = tab.dataset.tab;
+    document.querySelectorAll(".tab-content").forEach(c=>c.classList.add("hidden"));
+    document.getElementById(target).classList.remove("hidden");
+    if(target === "template") renderTemplateList();
+    if(target === "history") renderHistory();
+  }
+})
+
+// 渲染部位下拉
+function renderPartSelect(){
+  const sel = document.getElementById("partSelect");
+  sel.innerHTML = `<option value="">-- 选择部位 --</option>`;
+  const parts = [...new Set(templateList.map(x=>x.part))];
+  parts.forEach(p=>{
+    const opt = document.createElement("option");
+    opt.value = p;
+    opt.innerText = p;
+    sel.appendChild(opt);
+  })
+}
+
+// 切换部位，渲染该部位动作勾选列表
+document.getElementById("partSelect").onchange = function(){
+  const part = this.value;
+  const container = document.getElementById("actionList");
+  container.innerHTML = "";
+  if(!part) return;
+  const acts = templateList.filter(i=>i.part === part);
+  acts.forEach(item=>{
+    const div = document.createElement("div");
+    div.style="margin:4px 0;";
+    // 勾选框读取现有数据，保留已填写内容
+    const existRow = tableRows.find(r=>r.part===item.part && r.action===item.action);
+    const checked = existRow ? "checked" : "";
+    div.innerHTML = `<input type="checkbox" class="action-check" data-part="${item.part}" data-action="${item.action}" ${checked}> ${item.action}`;
+    container.appendChild(div);
+  })
+  // 勾选动作自动添加到表格
+  document.querySelectorAll(".action-check").forEach(cb=>{
+    cb.onchange = function(){
+      const p = this.dataset.part;
+      const a = this.dataset.action;
+      if(this.checked){
+        // 添加动作时，若已有这条记录，直接复用，不重置重量次数组数
+        const exist = tableRows.find(r=>r.part===p && r.action===a);
+        if(!exist){
+          tableRows.push({part:p,action:a,weight:"",count:"",group:""});
+        }
+      }else{
+        tableRows = tableRows.filter(r=>!(r.part===p && r.action===a));
+      }
+      renderTable();
+      updateSummary();
+    }
+  })
+}
+
+// 表格行操作
+function addTableRow(part,action,w="",cnt="",group=""){
+  const exist = tableRows.find(r=>r.part===part && r.action===action);
+  if(exist) return;
+  tableRows.push({part,action,weight:w,count:cnt,group});
+  renderTable();
+  updateSummary();
+}
+function removeRowByAction(part,action){
+  tableRows = tableRows.filter(r=>!(r.part===part && r.action===action));
+  renderTable();
+  updateSummary();
+}
+function renderTable(){
+  const tbody = document.getElementById("tableBody");
+  tbody.innerHTML = "";
+  tableRows.forEach((row,idx)=>{
+    const tr = document.createElement("tr");
+    tr.innerHTML = `
+      <td>${row.part}</td>
+      <td>${row.action}</td>
+      <td><input value="${row.weight}" data-idx="${idx}" class="inp-weight" placeholder="重量"></td>
+      <td><input value="${row.count}" data-idx="${idx}" class="inp-count" placeholder="次数"></td>
+      <td><input value="${row.group}" data-idx="${idx}" class="inp-group" placeholder="组数"></td>
+    `
+    tbody.appendChild(tr);
+  })
+  // 监听输入框变更，实时更新汇总
+  document.querySelectorAll(".inp-weight,.inp-count,.inp-group").forEach(input=>{
+    input.oninput = function(){
+      const i = this.dataset.idx;
+      if(this.classList.contains("inp-weight")) tableRows[i].weight=this.value;
+      if(this.classList.contains("inp-count")) tableRows[i].count=this.value;
+      if(this.classList.contains("inp-group")) tableRows[i].group=this.value;
+      updateSummary();
+    }
+  })
+}
+
+// 实时生成汇总文本
+function updateSummary(){
+  const name = document.getElementById("stuName").value || "学员";
+  const date = document.getElementById("classDate").value;
+  const remain = document.getElementById("remainCourse").value || "";
+  let text = `${name}，${date}，剩余课程：${remain}节\n`;
+  // 按部位分组输出
+  const groupByPart = {};
+  tableRows.forEach(r=>{
+    if(!groupByPart[r.part]) groupByPart[r.part]=[];
+    groupByPart[r.part].push(r);
+  })
+  for(let p in groupByPart){
+    text += `${p}：`
+    const acts = groupByPart[p].map(a=>{
+      let str = a.action;
+      if(a.weight) str += a.weight+"kg";
+      if(a.count) str += "*"+a.count;
+      if(a.group) str += "*"+a.group;
+      return str;
+    })
+    text += acts.join("、") + "\n";
+  }
+  document.getElementById("summaryText").innerText = text;
+}
+
+// 清空表格
+document.getElementById("clearTableBtn").onclick = ()=>{
+  tableRows = [];
+  renderTable();
+  updateSummary();
+  // 取消动作勾选
+  document.querySelectorAll(".action-check").forEach(cb=>cb.checked=false);
+}
+
+// 一键复制
+document.getElementById("copyBtn").onclick = async ()=>{
+  const txt = document.getElementById("summaryText").innerText;
+  try{
+    await navigator.clipboard.writeText(txt);
+    alert("✅ 已复制！直接粘贴发给学员");
+  }catch(e){
+    alert("复制失败，请手动选中文字复制");
+  }
+}
+
+// 保存本次记录到历史
+document.getElementById("saveRecordBtn").onclick = ()=>{
+  const rec = {
+    name:document.getElementById("stuName").value,
+    date:document.getElementById("classDate").value,
+    remain:document.getElementById("remainCourse").value,
+    rows:JSON.parse(JSON.stringify(tableRows)),
+    summary:document.getElementById("summaryText").innerText
+  }
+  if(!rec.name){alert("请填写学员姓名");return;}
+  historyList.unshift(rec);
+  localStorage.setItem(STORAGE_KEY_HIST, JSON.stringify(historyList));
+  alert("✅ 记录已保存到历史！");
+}
+
+// 模板：新增部位动作
+document.getElementById("addTemplateBtn").onclick = ()=>{
+  const p = document.getElementById("newPart").value.trim();
+  const a = document.getElementById("newAction").value.trim();
+  if(!p||!a){alert("请填写部位和动作");return;}
+  templateList.push({part:p,action:a});
+  localStorage.setItem(STORAGE_KEY_TPL, JSON.stringify(templateList));
+  renderPartSelect();
+  renderTemplateList();
+  document.getElementById("newPart").value="";
+  document.getElementById("newAction").value="";
+}
+// 渲染模板列表
+function renderTemplateList(){
+  const wrap = document.getElementById("templateList");
+  wrap.innerHTML="";
+  templateList.forEach((item,idx)=>{
+    const div = document.createElement("div");
+    div.className="template-item";
+    div.innerHTML = `<span>${item.part} - ${item.action}</span> <button class="del-btn" data-idx="${idx}">删除</button>`
+    wrap.appendChild(div);
+  })
+  document.querySelectorAll(".del-btn").forEach(btn=>{
+    btn.onclick = function(){
+      const i = this.dataset.idx;
+      templateList.splice(i,1);
+      localStorage.setItem(STORAGE_KEY_TPL, JSON.stringify(templateList));
+      renderPartSelect();
+      renderTemplateList();
+    }
+  })
+}
+
+// 历史记录渲染
+function renderHistory(){
+  const wrap = document.getElementById("historyList");
+  if(historyList.length===0){wrap.innerText="暂无历史记录";return;}
+  wrap.innerHTML="";
+  historyList.forEach((h,idx)=>{
+    const div = document.createElement("div");
+    div.style="padding:10px;border-bottom:1px solid #eee;";
+    div.innerHTML = `
+      <div style="font-weight:500">${h.name}｜${h.date}</div>
+      <div style="margin:6px 0;white-space:pre-wrap;font-size:14px;color:#444">${h.summary}</div>
+      <button class="copy-his" data-idx="${idx}" style="padding:4px 8px;font-size:14px;">复制</button>
+    `
+    wrap.appendChild(div);
+  })
+  document.querySelectorAll(".copy-his").forEach(btn=>{
+    btn.onclick = async function(){
+      const i = this.dataset.idx;
+      const txt = historyList[i].summary;
+      await navigator.clipboard.writeText(txt);
+      alert("✅ 历史记录已复制");
+    }
+  })
+}
+
+// 导出全部备份（模板+历史）
+document.getElementById("exportAll").onclick = ()=>{
+  const backup = {template:templateList, history:historyList};
+  const blob = new Blob([JSON.stringify(backup,null,2)],{type:"application/json"});
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement("a");
+  a.href = url;
+  a.download = "训练记录备份.json";
+  a.click();
+  URL.revokeObjectURL(url);
+}
+// 导入备份
+document.getElementById("importBtn").onclick = ()=>{
+  document.getElementById("fileInput").click();
+}
+document.getElementById("fileInput").onchange = function(e){
+  const f = e.target.files[0];
+  const reader = new FileReader();
+  reader.onload = ev=>{
+    const data = JSON.parse(ev.target.result);
+    templateList = data.template;
+    historyList = data.history;
+    localStorage.setItem(STORAGE_KEY_TPL, JSON.stringify(templateList));
+    localStorage.setItem(STORAGE_KEY_HIST, JSON.stringify(historyList));
+    renderPartSelect();
+    renderTemplateList();
+    alert("✅ 备份导入成功");
+  }
+  reader.readAsText(f);
+}
+
+// 页面初始化
+renderPartSelect();
+renderTable();
+updateSummary();
+renderTemplateList();
+</script>
+</body>
+</html>
