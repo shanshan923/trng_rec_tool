@@ -24,6 +24,7 @@ body {
   z-index: 100;
 }
 .header h1 { font-size: 18px; font-weight: 600; }
+
 /* 标签切换 */
 .tabs {
   display: flex;
@@ -48,8 +49,10 @@ body {
   border-bottom-color: #007aff;
   font-weight: 500;
 }
+
 .page { display: none; padding: 12px; }
 .page.active { display: block; }
+
 /* 信息卡片 */
 .info-card {
   background: #fff;
@@ -81,6 +84,7 @@ body {
 }
 .info-input:focus { border-bottom-color: #007aff; }
 .info-input[readonly] { color: #86868b; }
+
 /* 部位选择 */
 .section-title {
   font-size: 14px;
@@ -88,6 +92,7 @@ body {
   margin: 16px 0 8px;
   padding-left: 4px;
 }
+
 .part-grid {
   display: flex;
   flex-wrap: wrap;
@@ -107,6 +112,7 @@ body {
   background: #007aff;
   color: #fff;
 }
+
 /* 动作选择列表 */
 .exercise-list {
   background: #fff;
@@ -175,6 +181,7 @@ body {
   flex: 1;
   font-size: 15px;
 }
+
 /* 训练记录表 */
 .record-table-wrap {
   background: #fff;
@@ -214,6 +221,7 @@ body {
   background: transparent;
 }
 .record-table input:focus { background: #f0f7ff; }
+
 /* 汇总区 */
 .summary-section {
   background: #fff;
@@ -237,6 +245,7 @@ body {
   min-height: 60px;
   color: #1d1d1f;
 }
+
 /* 按钮 */
 .btn-primary {
   display: block;
@@ -264,6 +273,7 @@ body {
   cursor: pointer;
   margin-top: 8px;
 }
+
 /* 模板管理页 */
 .tpl-item {
   background: #fff;
@@ -295,6 +305,7 @@ body {
 }
 .tpl-action-btn.danger { background: #ffeaea; color: #ff3b30; }
 .tpl-action-btn.small { background: #f0f0f5; color: #007aff; }
+
 .tpl-exercise-list {
   padding: 8px 16px;
 }
@@ -307,6 +318,7 @@ body {
 }
 .tpl-exercise-item:last-child { border-bottom: none; }
 .tpl-exercise-name { font-size: 15px; }
+
 .add-form {
   background: #fff;
   border-radius: 12px;
@@ -323,6 +335,7 @@ body {
   outline: none;
 }
 .add-form input:focus { border-color: #007aff; }
+
 /* Toast */
 .toast {
   position: fixed;
@@ -340,6 +353,7 @@ body {
   pointer-events: none;
 }
 .toast.show { opacity: 1; }
+
 /* 底部操作栏 */
 .bottom-bar {
   position: fixed;
@@ -355,6 +369,7 @@ body {
 }
 .bottom-bar .btn-primary { flex: 1; margin-top: 0; }
 .bottom-bar .btn-secondary { width: auto; padding: 14px 20px; margin-top: 0; }
+
 /* 空状态 */
 .empty-state {
   text-align: center;
@@ -362,6 +377,7 @@ body {
   color: #86868b;
   font-size: 14px;
 }
+
 /* 历史记录 */
 .history-item {
   background: #fff;
@@ -382,14 +398,17 @@ body {
 </style>
 </head>
 <body>
+
 <div class="header">
   <h1>健身训练记录</h1>
 </div>
+
 <div class="tabs">
   <div class="tab active" data-page="record">记录</div>
   <div class="tab" data-page="template">模板管理</div>
   <div class="tab" data-page="history">历史记录</div>
 </div>
+
 <!-- ===== 记录页 ===== -->
 <div class="page active" id="page-record">
   <div class="info-card">
@@ -406,25 +425,31 @@ body {
       <input class="info-input" id="remainingClasses" type="number" placeholder="输入剩余节数">
     </div>
   </div>
+
   <div class="section-title">选择训练部位</div>
   <div class="part-grid" id="partGrid"></div>
+
   <div class="section-title">选择训练动作</div>
   <div class="exercise-list" id="exerciseList">
     <div class="empty-state">请先选择训练部位</div>
   </div>
+
   <div class="section-title">训练记录</div>
   <div class="record-table-wrap" id="recordTableWrap">
     <div class="empty-state">勾选动作后自动生成记录表格</div>
   </div>
+
   <div class="summary-section">
     <div class="summary-title">训练内容汇总</div>
     <div class="summary-content" id="summaryContent"></div>
   </div>
+
   <div class="bottom-bar">
     <button class="btn-primary" onclick="copySummary()">复制汇总文本</button>
     <button class="btn-secondary" onclick="saveRecord()">保存记录</button>
   </div>
 </div>
+
 <!-- ===== 模板管理页 ===== -->
 <div class="page" id="page-template">
   <div class="add-form">
@@ -433,17 +458,21 @@ body {
   </div>
   <div id="tplList"></div>
 </div>
+
 <!-- ===== 历史记录页 ===== -->
 <div class="page" id="page-history">
   <div id="historyList">
     <div class="empty-state">暂无历史记录</div>
   </div>
 </div>
+
 <div class="toast" id="toast"></div>
+
 <script>
 // ===== 数据管理 =====
 const STORAGE_KEY = 'fitness_trainer_data';
 const HISTORY_KEY = 'fitness_trainer_history';
+
 // 默认模板
 const defaultTemplate = [
   { id: 'p1', name: '肩', exercises: [
@@ -467,10 +496,11 @@ const defaultTemplate = [
     { id: 'e12', name: '深蹲' }
   ]}
 ];
+
 let templateData = loadTemplate();
 let selectedParts = new Set();
 let selectedExercises = new Set();
-// 【新增】全局存储每个动作填写的重量/次数/组数，勾选取消不会丢失
+// 全局存储每个动作填写的重量/次数/组数，勾选取消、切换页面都不会丢失
 let exerciseValueStore = {};
 
 function loadTemplate() {
@@ -480,17 +510,21 @@ function loadTemplate() {
   } catch(e) {}
   return JSON.parse(JSON.stringify(defaultTemplate));
 }
+
 function saveTemplate() {
   localStorage.setItem(STORAGE_KEY, JSON.stringify(templateData));
 }
+
 function loadHistory() {
   try {
     return JSON.parse(localStorage.getItem(HISTORY_KEY)) || [];
   } catch(e) { return []; }
 }
+
 function saveHistory(history) {
   localStorage.setItem(HISTORY_KEY, JSON.stringify(history));
 }
+
 // ===== 工具函数 =====
 function showToast(msg) {
   const t = document.getElementById('toast');
@@ -498,13 +532,16 @@ function showToast(msg) {
   t.classList.add('show');
   setTimeout(() => t.classList.remove('show'), 1800);
 }
+
 function getToday() {
   const d = new Date();
   return `${d.getFullYear()}/${d.getMonth()+1}/${d.getDate()}`;
 }
+
 function genId() {
   return 'id_' + Date.now() + '_' + Math.random().toString(36).substr(2, 6);
 }
+
 // ===== 标签切换 =====
 document.querySelectorAll('.tab').forEach(tab => {
   tab.addEventListener('click', () => {
@@ -512,19 +549,22 @@ document.querySelectorAll('.tab').forEach(tab => {
     document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
     tab.classList.add('active');
     document.getElementById('page-' + tab.dataset.page).classList.add('active');
+    if (tab.dataset.page === 'record') { renderPartGrid(); renderExerciseList(); renderRecordTable(); updateSummary(); }
     if (tab.dataset.page === 'template') renderTemplate();
     if (tab.dataset.page === 'history') renderHistory();
   });
 });
+
 // ===== 记录页渲染 =====
 function initRecordPage() {
   document.getElementById('classDate').value = getToday();
   renderPartGrid();
 
-  //【需求2：监听学员姓名、剩余课程输入，实时刷新汇总】
+  // 学员姓名、剩余课程输入时，汇总实时刷新
   document.getElementById('studentName').addEventListener('input', updateSummary);
   document.getElementById('remainingClasses').addEventListener('input', updateSummary);
 }
+
 function renderPartGrid() {
   const grid = document.getElementById('partGrid');
   grid.innerHTML = '';
@@ -548,6 +588,7 @@ function renderPartGrid() {
     grid.appendChild(tag);
   });
 }
+
 function renderExerciseList() {
   const list = document.getElementById('exerciseList');
   if (selectedParts.size === 0) {
@@ -589,6 +630,7 @@ function renderExerciseList() {
     list.appendChild(group);
   });
 }
+
 function toggleAllPart(partId) {
   const part = templateData.find(p => p.id === partId);
   if (!part) return;
@@ -602,6 +644,7 @@ function toggleAllPart(partId) {
   renderRecordTable();
   updateSummary();
 }
+
 function renderRecordTable() {
   const wrap = document.getElementById('recordTableWrap');
   if (selectedExercises.size === 0) {
@@ -632,8 +675,8 @@ function renderRecordTable() {
     const selectedExs = part.exercises.filter(ex => selectedExercises.has(ex.id));
     if (selectedExs.length === 0) return;
     selectedExs.forEach((ex, idx) => {
-      // 读取已保存的数据，如果不存在初始化空对象
-      if(!exerciseValueStore[ex.id]) exerciseValueStore[ex.id] = {weight:"", reps:"", sets:""};
+      // 读取已保存的数据，没有则初始化为空
+      if (!exerciseValueStore[ex.id]) exerciseValueStore[ex.id] = { weight: '', reps: '', sets: '' };
       const saved = exerciseValueStore[ex.id];
       html += `<tr>
         <td class="part-cell">${idx === 0 ? part.name : ''}</td>
@@ -647,18 +690,19 @@ function renderRecordTable() {
   html += '</tbody></table>';
   wrap.innerHTML = html;
 }
-// 【新增：输入框变更，保存值到全局存储】
-function handleInputChange(exId, field, val){
-  if(!exerciseValueStore[exId]) exerciseValueStore[exId] = {weight:"", reps:"", sets:""};
+
+// 输入框变更：保存到全局存储并刷新汇总
+function handleInputChange(exId, field, val) {
+  if (!exerciseValueStore[exId]) exerciseValueStore[exId] = { weight: '', reps: '', sets: '' };
   exerciseValueStore[exId][field] = val;
   updateSummary();
 }
+
 function updateSummary() {
   const student = document.getElementById('studentName').value || '学员';
   const date = document.getElementById('classDate').value;
   const remaining = document.getElementById('remainingClasses').value || '0';
   
-  //【需求1：删除开头（训练内容汇总：）文字】
   let summary = `${student}，${date}，剩余课程：${remaining}节`;
   
   templateData.forEach(part => {
@@ -666,26 +710,24 @@ function updateSummary() {
     const selectedExs = part.exercises.filter(ex => selectedExercises.has(ex.id));
     if (selectedExs.length === 0) return;
     
-    const exParts = [];
+    // 每个动作单独一行展示
+    summary += `\n${part.name}：`;
     selectedExs.forEach(ex => {
-      const storeData = exerciseValueStore[ex.id] || {weight:"", reps:"", sets:""};
-      const weight = storeData.weight;
-      const reps = storeData.reps;
-      const sets = storeData.sets;
-      if (weight || reps || sets) {
-        let str = ex.name;
-        if (weight) str += `${weight}kg`;
-        if (reps) str += `*${reps}`;
-        if (sets) str += `*${sets}`;
-        exParts.push(str);
-      }
+      const d = exerciseValueStore[ex.id] || { weight: '', reps: '', sets: '' };
+      const weight = d.weight;
+      const reps = d.reps;
+      const sets = d.sets;
+      let str = ex.name;
+      if (weight) str += `${weight}kg`;
+      if (reps) str += `*${reps}`;
+      if (sets) str += `*${sets}`;
+      summary += `\n  ${str}`;
     });
-    if (exParts.length > 0) {
-      summary += `\n${part.name}：${exParts.join('、')}`;
-    }
   });
+  
   document.getElementById('summaryContent').textContent = summary;
 }
+
 function copySummary() {
   const text = document.getElementById('summaryContent').textContent;
   if (!text) {
@@ -705,6 +747,7 @@ function copySummary() {
     showToast('已复制到剪贴板');
   });
 }
+
 function saveRecord() {
   const student = document.getElementById('studentName').value;
   if (!student) {
@@ -727,6 +770,7 @@ function saveRecord() {
   saveHistory(history);
   showToast('记录已保存');
 }
+
 // ===== 模板管理页 =====
 function renderTemplate() {
   const list = document.getElementById('tplList');
@@ -754,6 +798,7 @@ function renderTemplate() {
     list.appendChild(item);
   });
 }
+
 function addPart() {
   const nameInput = document.getElementById('newPartName');
   const name = nameInput.value.trim();
@@ -766,6 +811,7 @@ function addPart() {
   renderPartGrid();
   showToast('已添加部位');
 }
+
 function deletePart(partId) {
   if (!confirm('确定删除该部位及其所有动作？')) return;
   templateData = templateData.filter(p => p.id !== partId);
@@ -777,6 +823,7 @@ function deletePart(partId) {
   renderRecordTable();
   updateSummary();
 }
+
 function addExercisePrompt(partId) {
   const name = prompt('请输入动作名称：');
   if (!name || !name.trim()) return;
@@ -786,13 +833,19 @@ function addExercisePrompt(partId) {
   part.exercises.push({ id: genId(), name: name.trim() });
   saveTemplate();
   renderTemplate();
+  // 新增动作后，记录页同步刷新选项；之前勾选的动作和填写的数据全部保留
+  renderExerciseList();
+  renderRecordTable();
+  updateSummary();
+  showToast('已添加动作');
 }
+
 function deleteExercise(partId, exId) {
   const part = templateData.find(p => p.id === partId);
   if (!part) return;
   part.exercises = part.exercises.filter(ex => ex.id !== exId);
   selectedExercises.delete(exId);
-  // 删除动作同时清理存储的数据
+  // 删除动作同时清理该动作的填写数据
   delete exerciseValueStore[exId];
   saveTemplate();
   renderTemplate();
@@ -800,6 +853,7 @@ function deleteExercise(partId, exId) {
   renderRecordTable();
   updateSummary();
 }
+
 // ===== 历史记录页 =====
 function renderHistory() {
   const list = document.getElementById('historyList');
@@ -837,6 +891,7 @@ function renderHistory() {
     list.appendChild(div);
   });
 }
+
 // ===== 初始化 =====
 initRecordPage();
 </script>
